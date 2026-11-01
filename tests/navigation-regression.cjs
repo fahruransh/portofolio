@@ -20,15 +20,25 @@ const cases = {
         const r = e.getBoundingClientRect();
         return { width: r.width, left: r.left, right: r.right, bottom: r.bottom, src: e.dataset.preview, events: getComputedStyle(e).pointerEvents };
       });
-      assert.equal(preview.width, 180);
+      assert.equal(preview.width, 220);
       assert.ok(preview.left >= 0 && preview.right <= 1440 && preview.bottom <= 900);
       assert.equal(preview.src, await rows.nth(i).getAttribute('data-preview'));
-      assert.equal(preview.events, 'none');
+      assert.equal(preview.events, 'auto');
       await page.waitForTimeout(300);
-      assert.equal(await page.locator('.preview-rail').evaluate(e => Math.round(new DOMMatrix(getComputedStyle(e).transform).m42)), i === 0 ? 0 : -110);
+      assert.equal(await page.locator('.preview-rail').evaluate(e => Math.round(new DOMMatrix(getComputedStyle(e).transform).m42)), i === 0 ? 0 : -140);
     }
+    await page.locator('.preview-view').click();
+    await page.waitForURL('**/project.html?slug=bukit-barede');
+    assert.equal(await page.locator('h1').textContent(), 'Bukit Barede Ticket Website');
+    await page.reload();
+    assert.equal(await page.locator('.project-detail').count(), 1);
+    await page.goto(base + '/');
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('.project-cursor').waitFor({ state: 'attached' });
     assert.equal(await page.locator('.project-cursor').evaluate(e => getComputedStyle(e).display), 'none');
+    await rows.first().click();
+    await page.waitForURL('**/project.html?slug=bnnk-inventory');
+    assert.match(await page.locator('.project-detail').textContent(), /QR Code/);
   },
   async smoothScroll(page) {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -70,8 +80,7 @@ const cases = {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.equal(await work.locator('.chapter-content').evaluate(e => getComputedStyle(e).transform), 'none');
     assert.equal(await page.locator('#experience .career-list article').count(), 2);
-    await work.locator('summary').click();
-    assert.equal(await work.locator('details').getAttribute('open'), '');
+    assert.equal(await work.locator('details').count(), 0);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   },
   async longHistory(page) {

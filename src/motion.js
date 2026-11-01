@@ -28,8 +28,10 @@ export function setupMotion() {
     rail.append(image);
   });
   viewport.append(rail);
-  const caption = document.createElement('span');
-  caption.textContent = 'Placeholder';
+  const caption = document.createElement('a');
+  caption.className = 'preview-view';
+  caption.textContent = 'View ↗';
+  caption.tabIndex = -1;
   cursor.append(viewport, caption);
   const progress = document.createElement('div');
   progress.className = 'scroll-progress';
@@ -210,26 +212,31 @@ export function setupMotion() {
         y: Math.max(12, Math.min(e.clientY + 20, innerHeight - cursor.offsetHeight - 12)),
       });
       let activePreview = -1;
+      const hidePreview = gsap.delayedCall(.3, () => cursor.classList.remove('visible')).pause();
+      listen(cursor, 'pointerenter', () => { hidePreview.pause(); cx.tween.pause(); cy.tween.pause(); });
+      listen(cursor, 'pointerleave', () => hidePreview.restart(true));
       projects.forEach((project, index) => {
         listen(project, 'pointermove', e => { const point = position(e); cx(point.x); cy(point.y); });
         listen(project, 'pointerenter', e => {
+          hidePreview.pause();
+          caption.href = project.href;
           if (activePreview < 0) {
-            gsap.set(rail, { y: -index * 110 });
+            gsap.set(rail, { y: -index * 140 });
             gsap.set(cursor, position(e));
           } else {
-            gsap.to(rail, { y: -index * 110, duration: .25, ease: 'power3.out', overwrite: true });
+            gsap.to(rail, { y: -index * 140, duration: .25, ease: 'power3.out', overwrite: true });
             const point = position(e); cx(point.x); cy(point.y);
           }
           activePreview = index;
           cursor.dataset.preview = project.dataset.preview;
           cursor.classList.add('visible');
         });
-        listen(project, 'pointerleave', () => cursor.classList.remove('visible'));
+        listen(project, 'pointerleave', () => hidePreview.restart(true));
       });
       listen(window, 'scroll', () => cursor.classList.remove('visible'), { passive: true });
       listen(document, 'portfolio:menu', () => cursor.classList.remove('visible'));
       listen(window, 'blur', () => cursor.classList.remove('visible'));
-      cleanups.push(() => { cx.tween.kill(); cy.tween.kill(); gsap.killTweensOf(rail); cursor.classList.remove('visible'); });
+      cleanups.push(() => { hidePreview.kill(); cx.tween.kill(); cy.tween.kill(); gsap.killTweensOf(rail); cursor.classList.remove('visible'); });
     }
     return () => { cleanups.forEach(fn => fn()); intro.hidden = true; };
   });

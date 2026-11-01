@@ -8,6 +8,7 @@ import About from './pages/About'
 import Skills from './pages/Skills'
 import Certifications from './pages/Certifications'
 import Contact from './pages/Contact'
+import Project from './pages/Project'
 import '../style.css'
 import '../pages.css'
 import './styles/globals.css'
@@ -20,6 +21,7 @@ const titles: Record<string, [string, string]> = {
   '/skills.html': ['Kemampuan', 'Capabilities'],
   '/certifications.html': ['Sertifikasi', 'Credentials'],
   '/contact.html': ['Kontak', 'Contact'],
+  '/project.html': ['Project', 'Project'],
 }
 
 function App() {
@@ -82,6 +84,7 @@ function App() {
         <Route path="/about.html" element={<About />} />
         <Route path="/skills.html" element={<Skills />} />
         <Route path="/contact.html" element={<Contact />} />
+        <Route path="/project.html" element={<Project />} />
         <Route path="/certifications.html" element={<Certifications />} />
         <Route path="*" element={<p className="section">{en ? 'Page not found.' : 'Halaman tidak ditemukan.'} <Link to="/">{en ? 'Back home' : 'Kembali ke beranda'}</Link></p>} />
       </Routes>

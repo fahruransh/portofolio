@@ -1,5 +1,6 @@
 
 import { useLanguage } from '../language'
+import { Link } from 'react-router-dom'
 export default function Home(){
  const {t,language}=useLanguage()
  const en=language==='en'
@@ -29,18 +30,6 @@ export default function Home(){
   </div></section><section id="work" className="section work scroll-chapter work-chapter">
     <svg className="chapter-curve" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0 Q500 170 1000 0 L1000 102 L0 102 Z" /></svg><div className="chapter-content">
     <div className="section-head"><h2>02 / <span>{t("section.work", "PROJECT PILIHAN")}</span></h2><span>2024—2026</span></div>
-    <article className="work-entry"><div className="work-row" data-preview={import.meta.env.BASE_URL + 'project-inventory-placeholder.jpg'}><div className="work-title"><h3>BNNK Inventory Dashboard</h3></div><span className="work-category">Fullstack Development · 2025</span></div><details className="work-details"><summary><span>{t("work.details", "Detail project")}</span><span aria-hidden="true">＋</span></summary><div className="project-grid">
-        <p>{t("work.desc", "Sistem dashboard inventaris berbasis QR Code untuk membantu proses pengelolaan, identifikasi, dan pencatatan aset di BNNK Magelang.")} <a className="project-profile" href="https://github.com/zucksfox?tab=repositories" target="_blank" rel="noreferrer">{en?'Browse my GitHub repositories ↗':'Lihat daftar repository GitHub saya ↗'}</a></p>
-        <div>
-          <small>{t("work.roleLabel", "PERAN SAYA")}</small><p>Fullstack Developer</p>
-          <small>{t("work.scopeLabel", "CAKUPAN")}</small><p>UI · Frontend · Backend · Database · QR Integration</p>
-        </div>
-        <ul className="project-deliverables">
-          <li>{t("work.ui", "Merancang dan mengimplementasikan UI dashboard inventaris.")}</li>
-          <li>{t("work.backend", "Mengembangkan backend dan database pencatatan aset.")}</li>
-          <li>{t("work.qr", "Mengintegrasikan QR Code untuk identifikasi aset.")}</li>
-          <li>{t("work.testing", "Melakukan pengujian dan troubleshooting sistem.")}</li>
-        </ul>
-      </div></details></article>
-    <article className="work-entry"><div className="work-row" data-preview={import.meta.env.BASE_URL + 'project-barede-placeholder.jpg'}><div className="work-title"><h3>Bukit Barede Ticket Website</h3></div><span className="work-category">{en ? 'Ticket Website' : 'Website Tiket'}</span></div></article>
+    <article className="work-entry"><Link className="work-row" to="/project.html?slug=bnnk-inventory" data-preview={import.meta.env.BASE_URL + 'project-inventory-placeholder.jpg'}><div className="work-title"><h3>BNNK Inventory Dashboard</h3></div><span className="work-category">Fullstack Development · 2025</span></Link></article>
+    <article className="work-entry"><Link className="work-row" to="/project.html?slug=bukit-barede" data-preview={import.meta.env.BASE_URL + 'project-barede-placeholder.jpg'}><div className="work-title"><h3>Bukit Barede Ticket Website</h3></div><span className="work-category">{en ? 'Ticket Website' : 'Website Tiket'}</span></Link></article>
     </div></section></>}
