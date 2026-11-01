@@ -60,12 +60,18 @@ test('subpages keep section h2 before any item h3', () => {
   }
 })
 
-test('Contact retains its primary CTA and email without a duplicate footer', () => {
+test('About omits the experience shortcut while preserving its copy', () => {
+  const html = renderPage('About')
+  assert.doesNotMatch(html, /href="\/#experience"/)
+  assert.match(html, /BNNK Magelang/)
+})
+
+test('Contact retains only its primary email CTA without a duplicate footer', () => {
   const html = renderPage('Contact')
   assert.doesNotMatch(html, /<footer/)
-  assert.equal((html.match(/href="mailto:fahruransh@gmail.com"/g) || []).length, 2)
+  assert.equal((html.match(/href="mailto:fahruransh@gmail.com"/g) || []).length, 1)
   assert.match(html, /class="contact-orb"/)
-  assert.match(html, /class="email"/)
+  assert.doesNotMatch(html, /class="email"/)
 })
 
 test('HTML shells have unique metadata and matching Open Graph fields without invented URLs', () => {

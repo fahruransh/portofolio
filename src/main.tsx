@@ -12,6 +12,7 @@ import '../style.css'
 import '../pages.css'
 import './styles/globals.css'
 import './styles/audit-fixes.css'
+import './styles/chapters.css'
 
 const PortfolioFooter = lazy(() => import('./footer'))
 const titles: Record<string, [string, string]> = {

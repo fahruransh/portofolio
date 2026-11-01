@@ -5,7 +5,8 @@ export default function Home(){
  const en=language==='en'
 
  return <><section className="hero" aria-labelledby="hero-title"><div className="hero-symbol hero-portrait"><picture><source type="image/webp" srcSet={`${import.meta.env.BASE_URL}fahrur-portrait-812.webp 812w, ${import.meta.env.BASE_URL}fahrur-portrait-1624.webp 1624w`} sizes="max(100vw, 207svh)"/><img src={import.meta.env.BASE_URL + "fahrur-portrait.png"} alt="Fahrur Anshori" width="1624" height="912" fetchPriority="high" /></picture></div><div className="location-tag"><span>{en?'Located in':'Berlokasi di'}<br />Magelang,<br />Indonesia</span><span className="globe" aria-hidden="true">◎</span></div><div className="hero-role"><span className="role-arrow" aria-hidden="true">↘</span><p>Fullstack &<br />Mobile Developer</p></div><div className="name-track"><h1 id="hero-title">Fahrur Anshori —</h1><span aria-hidden="true">Fahrur Anshori —</span></div><a className="hero-scroll" href="#experience"><span aria-hidden="true">↓</span><span className="hero-scroll-label">{en?'Experience':'Pengalaman'}</span></a><div className="hero-bottom"><span className="hero-index">PORTFOLIO / 2026</span></div></section>
-<section id="experience" className="section">
+<section id="experience" className="section scroll-chapter experience-chapter">
+    <div className="chapter-content">
     <div className="section-head"><h2>01 / <span>{t("section.experience", "PENGALAMAN")}</span></h2><span>{t("common.selected", "PILIHAN")}</span></div>
     <div className="career-list">
       <article>
@@ -25,9 +26,10 @@ export default function Home(){
         </div>
       </article>
     </div>
-  </section><section id="work" className="section work">
+  </div></section><section id="work" className="section work scroll-chapter work-chapter">
+    <svg className="chapter-curve" viewBox="0 0 1000 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 0 Q500 170 1000 0 L1000 102 L0 102 Z" /></svg><div className="chapter-content">
     <div className="section-head"><h2>02 / <span>{t("section.work", "PROJECT PILIHAN")}</span></h2><span>2024—2026</span></div>
-    <article className="work-entry"><div className="work-row"><div className="work-title"><h3>BNNK Inventory Dashboard</h3></div><span className="work-category">Fullstack Development · 2025</span></div><details className="work-details"><summary><span>{t("work.details", "Detail project")}</span><span aria-hidden="true">＋</span></summary><div className="project-grid">
+    <article className="work-entry"><div className="work-row" data-preview={import.meta.env.BASE_URL + 'project-inventory-placeholder.jpg'}><div className="work-title"><h3>BNNK Inventory Dashboard</h3></div><span className="work-category">Fullstack Development · 2025</span></div><details className="work-details"><summary><span>{t("work.details", "Detail project")}</span><span aria-hidden="true">＋</span></summary><div className="project-grid">
         <p>{t("work.desc", "Sistem dashboard inventaris berbasis QR Code untuk membantu proses pengelolaan, identifikasi, dan pencatatan aset di BNNK Magelang.")} <a className="project-profile" href="https://github.com/zucksfox?tab=repositories" target="_blank" rel="noreferrer">{en?'Browse my GitHub repositories ↗':'Lihat daftar repository GitHub saya ↗'}</a></p>
         <div>
           <small>{t("work.roleLabel", "PERAN SAYA")}</small><p>Fullstack Developer</p>
@@ -39,4 +41,6 @@ export default function Home(){
           <li>{t("work.qr", "Mengintegrasikan QR Code untuk identifikasi aset.")}</li>
           <li>{t("work.testing", "Melakukan pengujian dan troubleshooting sistem.")}</li>
         </ul>
-      </div></details></article></section></>}
+      </div></details></article>
+    <article className="work-entry"><div className="work-row" data-preview={import.meta.env.BASE_URL + 'project-barede-placeholder.jpg'}><div className="work-title"><h3>Bukit Barede Ticket Website</h3></div><span className="work-category">{en ? 'Ticket Website' : 'Website Tiket'}</span></div></article>
+    </div></section></>}

@@ -6,5 +6,5 @@ export default function About(){const {t}=useLanguage();return <><div className=
     <div className="about-copy">
       <p>{t("about.p1", "Mahasiswa S1 Informatika Universitas Muhammadiyah Magelang dengan fokus pada Software Development.")}</p>
       <p>{t("about.p2", "Pengalaman pengembangan mencakup dashboard inventaris berbasis QR Code di BNNK Magelang dan implementasi antarmuka di PT Asta Brata Teknologi.")}</p>
-    <Link className="round-link" to="/#experience"><span>{t("nav.experience", "Pengalaman")}</span> ↘</Link></div>
+    </div>
   </section></>}

@@ -6,7 +6,7 @@ export function setupMotion() {
   const media = gsap.matchMedia();
   const heading = document.querySelector('.profile-heading');
   const track = document.querySelector('.name-track');
-  const project = document.querySelector('.work-row');
+  const projects = document.querySelectorAll('.work-row[data-preview]');
   const intro = document.createElement('div');
   intro.className = 'intro';
   intro.setAttribute('aria-hidden', 'true');
@@ -15,7 +15,22 @@ export function setupMotion() {
   const cursor = document.createElement('div');
   cursor.className = 'project-cursor';
   cursor.setAttribute('aria-hidden', 'true');
-  cursor.textContent = 'Explore ↗';
+  const viewport = document.createElement('div');
+  viewport.className = 'preview-viewport';
+  const rail = document.createElement('div');
+  rail.className = 'preview-rail';
+  projects.forEach(project => {
+    const image = document.createElement('img');
+    image.alt = '';
+    image.width = 640;
+    image.height = 440;
+    image.src = project.dataset.preview;
+    rail.append(image);
+  });
+  viewport.append(rail);
+  const caption = document.createElement('span');
+  caption.textContent = 'Placeholder';
+  cursor.append(viewport, caption);
   const progress = document.createElement('div');
   progress.className = 'scroll-progress';
   progress.setAttribute('aria-hidden', 'true');
@@ -76,6 +91,23 @@ export function setupMotion() {
     entry.from('.hero-role,.location-tag,.nav', { opacity: 0, y: 24, duration: .75, stagger: .07, ease: 'power3.out', clearProps: 'opacity,transform' }, '-=.7');
     entry.timeScale(entry.duration() / 3);
     gsap.to(progress, { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: true } });
+    gsap.utils.toArray('.scroll-chapter').forEach(chapter => {
+      const curve = chapter.querySelector('.chapter-curve');
+      const content = chapter.querySelector('.chapter-content');
+      if (curve) {
+        gsap.fromTo(curve.querySelector('path'), {
+          attr: { d: 'M0 0 Q500 170 1000 0 L1000 102 L0 102 Z' },
+        }, {
+          attr: { d: 'M0 0 Q500 0 1000 0 L1000 102 L0 102 Z' },
+          ease: 'none',
+          scrollTrigger: { trigger: chapter, start: 'top bottom', end: 'top 20%', scrub: .5, invalidateOnRefresh: true },
+        });
+      }
+      gsap.fromTo(content, { y: desktop ? 65 : 28 }, {
+        y: 0, ease: 'none',
+        scrollTrigger: { trigger: chapter, start: 'top bottom', end: 'top 20%', scrub: .5 },
+      });
+    });
     if (track) {
       const velocity = { value: 1 };
       let direction = 1;
@@ -173,11 +205,31 @@ export function setupMotion() {
       });
       const cx = gsap.quickTo(cursor, 'x', { duration: .25, ease: 'power3.out' });
       const cy = gsap.quickTo(cursor, 'y', { duration: .25, ease: 'power3.out' });
-      listen(project, 'pointermove', e => { cx(e.clientX); cy(e.clientY); });
-      listen(project, 'pointerenter', e => { gsap.set(cursor, { x: e.clientX, y: e.clientY }); cursor.classList.add('visible'); });
-      listen(project, 'pointerleave', () => cursor.classList.remove('visible'));
+      const position = e => ({
+        x: Math.max(12, Math.min(e.clientX + 20, innerWidth - cursor.offsetWidth - 12)),
+        y: Math.max(12, Math.min(e.clientY + 20, innerHeight - cursor.offsetHeight - 12)),
+      });
+      let activePreview = -1;
+      projects.forEach((project, index) => {
+        listen(project, 'pointermove', e => { const point = position(e); cx(point.x); cy(point.y); });
+        listen(project, 'pointerenter', e => {
+          if (activePreview < 0) {
+            gsap.set(rail, { y: -index * 110 });
+            gsap.set(cursor, position(e));
+          } else {
+            gsap.to(rail, { y: -index * 110, duration: .25, ease: 'power3.out', overwrite: true });
+            const point = position(e); cx(point.x); cy(point.y);
+          }
+          activePreview = index;
+          cursor.dataset.preview = project.dataset.preview;
+          cursor.classList.add('visible');
+        });
+        listen(project, 'pointerleave', () => cursor.classList.remove('visible'));
+      });
+      listen(window, 'scroll', () => cursor.classList.remove('visible'), { passive: true });
+      listen(document, 'portfolio:menu', () => cursor.classList.remove('visible'));
       listen(window, 'blur', () => cursor.classList.remove('visible'));
-      cleanups.push(() => { cx.tween.kill(); cy.tween.kill(); cursor.classList.remove('visible'); });
+      cleanups.push(() => { cx.tween.kill(); cy.tween.kill(); gsap.killTweensOf(rail); cursor.classList.remove('visible'); });
     }
     return () => { cleanups.forEach(fn => fn()); intro.hidden = true; };
   });
