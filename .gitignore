@@ -1,3 +1,18 @@
 node_modules/
 dist/
 *.local
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+
+# Local progress and generated test output
+PROGRESS.md
+playwright-report/
+test-results/
+*.log
+
+# OS metadata
+.DS_Store
+Thumbs.db
