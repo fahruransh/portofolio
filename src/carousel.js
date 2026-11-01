@@ -25,8 +25,19 @@ export function setupCarousel(){
   const previous = () => move(-1); const following = () => move(1);
   prev.addEventListener('click', previous);
   next.addEventListener('click', following);
-  track.addEventListener('scroll', update, { passive: true });
-  const ended = () => { target = track.scrollLeft; update(); };track.addEventListener('scrollend', ended);
+  let settleTimer;
+  const ended = () => {
+    clearTimeout(settleTimer);
+    target = track.scrollLeft;
+    update();
+  };
+  const scrolling = () => {
+    update();
+    clearTimeout(settleTimer);
+    settleTimer = setTimeout(ended, 160);
+  };
+  track.addEventListener('scroll', scrolling, { passive: true });
+  track.addEventListener('scrollend', ended);
   const keydown = e => {
     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); move(e.key === 'ArrowRight' ? 1 : -1); }
     if (e.key === 'Home' || e.key === 'End') { e.preventDefault(); target = e.key === 'Home' ? 0 : track.scrollWidth; move(0); }
@@ -34,5 +45,14 @@ export function setupCarousel(){
   const resize = new ResizeObserver(() => { target = track.scrollLeft; update(); });resize.observe(track);
   document.addEventListener('portfolio:language', update);
   update();
-return () => {resize.disconnect();prev.removeEventListener('click',previous);next.removeEventListener('click',following);track.removeEventListener('scroll',update);track.removeEventListener('scrollend',ended);track.removeEventListener('keydown',keydown);document.removeEventListener('portfolio:language',update)};
+  return () => {
+    clearTimeout(settleTimer);
+    resize.disconnect();
+    prev.removeEventListener('click', previous);
+    next.removeEventListener('click', following);
+    track.removeEventListener('scroll', scrolling);
+    track.removeEventListener('scrollend', ended);
+    track.removeEventListener('keydown', keydown);
+    document.removeEventListener('portfolio:language', update);
+  };
 }

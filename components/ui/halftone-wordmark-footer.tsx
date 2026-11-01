@@ -8,6 +8,8 @@ export interface FooterLink { label: string; href?: string }
 export interface FooterColumn { title: string; links: FooterLink[] }
 export interface HalftoneWordmarkFooterProps {
   wordmark?: string; label?: string; meta?: string; columns?: FooterColumn[]
+  backToTopLabel?: string
+  renderLink?: (link: FooterLink) => React.ReactNode
   backToTop?: boolean; preset?: HalftonePreset; palette?: Partial<HalftonePalette>
   dotGap?: number; radius?: number; crop?: number; grain?: number; interactive?: boolean
   fontFamily?: string; fontWeight?: number; monoFamily?: string; height?: string; className?: string
@@ -66,10 +68,11 @@ const HWF_CSS = `
 @media(prefers-reduced-motion:reduce){.hwf-col a,.hwf-up{transition:none}}
 `
 
-export default function HalftoneWordmarkFooter({ wordmark = "halden", label = "Halden Studio", meta = "©2026 · Oslo / Lisbon", columns = DEFAULT_COLUMNS, backToTop = true, preset = "night", palette, dotGap = 6, radius = 80, crop = 0.2, grain = 0.5, interactive = true, fontFamily = SANS_STACK, fontWeight = 800, monoFamily = MONO_STACK, height = "560px", className = "" }: HalftoneWordmarkFooterProps) {
+export default function HalftoneWordmarkFooter({ wordmark = "halden", label = "Halden Studio", meta = "©2026 · Oslo / Lisbon", columns = DEFAULT_COLUMNS, backToTop = true, backToTopLabel = "Back to top ↑", renderLink, preset = "night", palette, dotGap = 6, radius = 80, crop = 0.2, grain = 0.5, interactive = true, fontFamily = SANS_STACK, fontWeight = 800, monoFamily = MONO_STACK, height = "560px", className = "" }: HalftoneWordmarkFooterProps) {
   const colors = { ...(PRESETS[preset] || PRESETS.night), ...palette }
   const rootRef = React.useRef<HTMLElement>(null)
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
+  const wakeRef = React.useRef<(() => void) | null>(null)
   const opts = React.useRef({ colors, dotGap, radius, crop, grain, interactive, fontFamily, fontWeight, wordmark })
   opts.current = { colors, dotGap, radius, crop, grain, interactive, fontFamily, fontWeight, wordmark }
   const key = [wordmark, dotGap, crop, grain, fontFamily, fontWeight, colors.background, colors.ink, colors.warm].join("|")
@@ -81,16 +84,24 @@ export default function HalftoneWordmarkFooter({ wordmark = "halden", label = "H
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)")
     let reduced = preference.matches
     let w = 0, h = 0, dpr = 1, px = -1e5, py = -1e5, raf = 0
-    let visible = true, awake = true, alive = true
+    let visible = false, awake = true, alive = true, layoutDirty = true
+    let layoutSignature = ""
     let ring = { x: 0, y: 0, t: -1 }
     let dots = new Float32Array(0), count = 0
     let grainTile: HTMLCanvasElement | null = null
+    let grainPattern: CanvasPattern | null = null
+    let pointerTime = -Infinity
+    const timestep = 1000 / 60
+    let previousTime: number | null = null, accumulator = 0
     const ink = hwfHex(opts.current.colors.ink) || [233, 228, 218]
     const warm = hwfHex(opts.current.colors.warm) || [233, 118, 43]
     const layout = () => {
       const o = opts.current, rect = root.getBoundingClientRect()
       w = Math.max(1, Math.round(rect.width)); h = Math.max(1, Math.round(rect.height))
       dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const signature = [w, h, dpr].join("|")
+      if (!layoutDirty && signature === layoutSignature) return
+      layoutDirty = false; layoutSignature = signature
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr)
       const mask = document.createElement("canvas")
       mask.width = w; mask.height = h
@@ -127,24 +138,37 @@ export default function HalftoneWordmarkFooter({ wordmark = "halden", label = "H
         }
         g.putImageData(id, 0, 0)
       }
+      grainPattern = grainTile ? ctx.createPattern(grainTile, "repeat") : null
       awake = true
     }
     const draw = (now: number) => {
       const o = opts.current
+      accumulator += previousTime === null ? 0 : Math.min(100, Math.max(0, now - previousTime))
+      previousTime = now
+      const steps = Math.floor((accumulator + 1e-7) / timestep)
+      accumulator = Math.max(0, accumulator - steps * timestep)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.fillStyle = o.colors.background; ctx.fillRect(0, 0, w, h)
-      const r = o.interactive && !reduced ? Math.max(0, o.radius) : 0
-      const ringAge = ring.t < 0 ? 1e9 : now - ring.t, ringR = ringAge * .9
+      const pointerActive = now - pointerTime < 120
+      const r = o.interactive && !reduced && pointerActive ? Math.max(0, o.radius) : 0
+      const ringAge = ring.t < 0 ? 1e9 : now - ring.t
       let moving = false
       for (let i = 0; i < count; i++) {
         const j = i * 7, hx = dots[j + 4], hy = dots[j + 5]
         let x = dots[j], y = dots[j + 1], vx = dots[j + 2], vy = dots[j + 3]
         if (!reduced) {
-          if (ringAge < 900) {
-            const dx = hx - ring.x, dy = hy - ring.y, d = Math.sqrt(dx * dx + dy * dy) + .001
-            const band = 1 - Math.min(1, Math.abs(d - ringR) / 26)
-            if (band > 0) { const f = band * 3.2 * (1 - ringAge / 900); vx += dx / d * f; vy += dy / d * f }
+          for (let step = 0; step < steps; step++) {
+            const age = ringAge - accumulator - (steps - step - 1) * timestep
+            if (age >= 0 && age < 900) {
+              const dx = hx - ring.x, dy = hy - ring.y
+              const d = Math.sqrt(dx * dx + dy * dy) + .001
+              const band = 1 - Math.min(1, Math.abs(d - age * .9) / 26)
+              if (band > 0) {
+                const f = band * 3.2 * (1 - age / 900)
+                vx += dx / d * f; vy += dy / d * f
+              }
+            }
+            ;[x, y, vx, vy] = hwfStep(x, y, vx, vy, hx, hy, px, py, r)
           }
-          ;[x, y, vx, vy] = hwfStep(x, y, vx, vy, hx, hy, px, py, r)
           if (Math.abs(vx) + Math.abs(vy) > .02 || Math.abs(x - hx) + Math.abs(y - hy) > .05) moving = true
           else { x = hx; y = hy; vx = 0; vy = 0 }
         } else { x = hx; y = hy; vx = 0; vy = 0 }
@@ -155,38 +179,50 @@ export default function HalftoneWordmarkFooter({ wordmark = "halden", label = "H
       }
       if (grainTile && o.grain > 0) {
         ctx.globalAlpha = Math.min(1, o.grain) * .09; ctx.globalCompositeOperation = "overlay"
-        const pattern = ctx.createPattern(grainTile, "repeat")
-        if (pattern) { ctx.fillStyle = pattern; ctx.fillRect(0, 0, w, h) }
+        if (grainPattern) { ctx.fillStyle = grainPattern; ctx.fillRect(0, 0, w, h) }
         ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"
       }
-      awake = !reduced && (moving || ringAge < 900 || (o.interactive && px > -1e4))
+      awake = !reduced && (moving || ringAge < 900 || (o.interactive && pointerActive))
     }
     const loop = (now: number) => { raf = 0; if (!visible || document.hidden) return; draw(now); if (awake) raf = requestAnimationFrame(loop) }
-    const wake = () => { awake = true; if (!raf && visible && !document.hidden) raf = requestAnimationFrame(loop) }
+    const wake = () => {
+      awake = true
+      if (!raf && visible && !document.hidden) {
+        previousTime = performance.now(); accumulator = 0
+        raf = requestAnimationFrame(loop)
+      }
+    }
+    wakeRef.current = wake
     const toLocal = (e: PointerEvent) => { const b = canvas.getBoundingClientRect(); return [e.clientX - b.left, e.clientY - b.top] }
-    const onMove = (e: PointerEvent) => { if (!opts.current.interactive || reduced) return; [px, py] = toLocal(e); wake() }
+    const onMove = (e: PointerEvent) => { if (!opts.current.interactive || reduced) return; [px, py] = toLocal(e); pointerTime = performance.now(); wake() }
     const onLeave = () => { px = py = -1e5; wake() }
     const onDown = (e: PointerEvent) => {
       if (!opts.current.interactive || reduced || (e.target as HTMLElement).closest("a,button")) return
       const p = toLocal(e); ring = { x: p[0], y: p[1], t: performance.now() }; wake()
     }
     const onPreference = () => { reduced = preference.matches; px = py = -1e5; ring.t = -1; wake() }
-    layout(); draw(performance.now()); wake()
+    const refreshLayout = () => { if (visible && !document.hidden) { layout(); wake() } }
     root.addEventListener("pointermove", onMove); root.addEventListener("pointerleave", onLeave); root.addEventListener("pointerdown", onDown)
-    preference.addEventListener("change", onPreference); document.addEventListener("visibilitychange", wake)
-    const ro = new ResizeObserver(() => { layout(); wake() }); ro.observe(root)
-    const io = new IntersectionObserver(entries => { visible = entries[0]?.isIntersecting ?? true; if (visible) wake() }); io.observe(root)
-    document.fonts?.ready.then(() => { if (alive) { layout(); wake() } })
+    preference.addEventListener("change", onPreference); document.addEventListener("visibilitychange", refreshLayout)
+    const ro = new ResizeObserver(refreshLayout); ro.observe(root)
+    const io = new IntersectionObserver(entries => {
+      visible = entries[0]?.isIntersecting ?? false
+      if (visible) refreshLayout()
+      else { cancelAnimationFrame(raf); raf = 0 }
+    }, { rootMargin: "200px 0px" }); io.observe(root)
+    document.fonts?.ready.then(() => { if (alive) { layoutDirty = true; refreshLayout() } })
     return () => {
+      wakeRef.current = null
       alive = false; cancelAnimationFrame(raf); ro.disconnect(); io.disconnect()
       root.removeEventListener("pointermove", onMove); root.removeEventListener("pointerleave", onLeave); root.removeEventListener("pointerdown", onDown)
-      preference.removeEventListener("change", onPreference); document.removeEventListener("visibilitychange", wake)
+      preference.removeEventListener("change", onPreference); document.removeEventListener("visibilitychange", refreshLayout)
     }
   }, [key])
+  React.useEffect(() => { wakeRef.current?.() }, [interactive, radius])
   return <footer ref={rootRef} className={"hwf-root " + className} style={{ height, "--hwf-bg": colors.background, "--hwf-ink": colors.ink, "--hwf-mono": monoFamily } as React.CSSProperties}>
     <style>{HWF_CSS}</style><canvas ref={canvasRef} aria-hidden="true" /><span className="hwf-sr">{wordmark}</span>
     <div className="hwf-top"><div className="hwf-brand"><strong>{label}</strong><span>{meta}</span></div>
-      {columns.map(col => <nav className="hwf-col" key={col.title} aria-label={col.title}><h3>{col.title}</h3><ul>{col.links.map(l => <li key={l.label}><a href={l.href || "#"}>{l.label}</a></li>)}</ul></nav>)}
-    </div><div className="hwf-rule">{backToTop && <button type="button" className="hwf-up" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>Back to top ↑</button>}</div>
+      {columns.map(col => <nav className="hwf-col" key={col.title} aria-label={col.title}><h3>{col.title}</h3><ul>{col.links.map(l => <li key={l.label}>{renderLink ? renderLink(l) : <a href={l.href || "#"}>{l.label}</a>}</li>)}</ul></nav>)}
+    </div><div className="hwf-rule">{backToTop && <button type="button" className="hwf-up" onClick={() => window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>{backToTopLabel}</button>}</div>
   </footer>
 }

@@ -89,11 +89,35 @@ export function setupMotion() {
         phase = ((phase + velocity.value * Math.min(delta, 64) / 1000 / (desktop ? 24 : 18)) % 1 + 1) % 1;
         gsap.set(track, { x: -phase * width });
       };
-      gsap.ticker.add(tick);
+      let paused = document.querySelector('.marquee-pause')?.getAttribute('aria-pressed') === 'true';
+      let visible = false;
+      let ticking = false;
+      const syncTicker = () => {
+        const active = visible && !paused && !document.hidden;
+        if (active === ticking) return;
+        ticking = active;
+        if (active) gsap.ticker.add(tick);
+        else {
+          gsap.ticker.remove(tick);
+          settle.pause();
+          gsap.killTweensOf(velocity);
+        }
+      };
+      const visibility = new IntersectionObserver(entries => {
+        visible = entries[0]?.isIntersecting ?? false;
+        syncTicker();
+      });
+      visibility.observe(track);
+      listen(document, 'visibilitychange', syncTicker);
+      listen(document, 'portfolio:marquee', event => {
+        paused = Boolean(event.detail?.paused);
+        syncTicker();
+      });
       const settle = gsap.delayedCall(.12, () => {
         gsap.to(velocity, { value: direction, duration: .7, ease: 'power3.out', overwrite: true });
       }).pause();
       ScrollTrigger.create({ start: 0, end: 'max', onUpdate: self => {
+        if (!ticking) return;
         direction = self.direction;
         gsap.to(velocity, { value: direction * (1 + Math.min(Math.abs(self.getVelocity()) / 700, 3)), duration: .2, ease: 'power3.out', overwrite: true });
         settle.restart(true);
@@ -101,6 +125,7 @@ export function setupMotion() {
       cleanups.push(() => {
         gsap.ticker.remove(tick);
         resize.disconnect();
+        visibility.disconnect();
         settle.kill();
         gsap.killTweensOf(velocity);
         gsap.set(track, { clearProps: 'animation,transform' });
@@ -125,9 +150,16 @@ export function setupMotion() {
     });
 
     const links = document.querySelector('.mobile-menu').querySelectorAll(':scope > a,.menu-caption,.menu-social');
+    let menuTween;
     listen(document, 'portfolio:menu', e => {
-      if (e.detail.open) gsap.fromTo(links, { y: 45, opacity: 0 }, { y: 0, opacity: 1, stagger: .045, duration: .45, ease: 'power3.out', overwrite: true });
-      else gsap.to(links, { y: 15, opacity: 0, duration: .18, overwrite: true });
+      menuTween?.kill();
+      menuTween = e.detail.open
+        ? gsap.fromTo(links, { y: 45, opacity: 0 }, { y: 0, opacity: 1, stagger: .045, duration: .45, ease: 'power3.out', overwrite: true })
+        : gsap.to(links, { y: 15, opacity: 0, duration: .18, overwrite: true });
+    });
+    cleanups.push(() => {
+      menuTween?.kill();
+      gsap.set(links, { clearProps: 'opacity,transform' });
     });
     if (fine) {
       document.querySelectorAll('.round-link,.contact-orb,.desktop-nav a,.brand,.email').forEach(el => {

@@ -4,13 +4,4 @@ export default function Contact(){const {t}=useLanguage();return <><div classNam
     <span>06 / <span>{t("section.contact", "KONTAK")}</span></span>
     <h2>{t("contact.heading", "Mari bekerja\nbersama.")}</h2><a className="contact-orb" href="mailto:fahruransh@gmail.com">{t("nav.emailMe", "Hubungi saya ↗")}</a>
     <a className="email" href="mailto:fahruransh@gmail.com">fahruransh@gmail.com ↗</a>
-    <footer>
-      <div><b>Fahrur Anshori</b><span>Fullstack & Mobile Developer</span></div>
-      <div className="social">
-        <a href="https://github.com/zucksfox?tab=repositories" target="_blank" rel="noreferrer">GitHub ↗</a>
-        <a href="https://www.linkedin.com/in/fahrur-anshori/" target="_blank" rel="noreferrer">LinkedIn ↗</a>
-        <a href="mailto:fahruransh@gmail.com">Email ↗</a>
-      </div>
-      <span>© 2026</span>
-    </footer>
   </section></>}
