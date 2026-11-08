@@ -134,7 +134,7 @@ export default function Home() {
                 <h3>BNNK Inventory Dashboard</h3>
               </div>
               <span className="work-category">
-                Laravel 12 · PHP 8.2 · MySQL · 2025
+                Laravel 12 · PHP 8.2 · MySQL · Flutter · 2025
               </span>
             </Link>
           </article>
