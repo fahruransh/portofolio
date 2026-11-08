@@ -80,7 +80,7 @@ const LanguageContext = createContext({
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState(() => {
     try {
-      return localStorage.getItem("portfolio-language") ?? "en";
+      return localStorage.getItem("portfolio-language-v2") ?? "en";
     } catch {
       return "en";
     }
@@ -88,7 +88,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language;
     try {
-      localStorage.setItem("portfolio-language", language);
+      localStorage.setItem("portfolio-language-v2", language);
     } catch {}
     document.dispatchEvent(new Event("portfolio:language"));
   }, [language]);
