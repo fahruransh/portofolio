@@ -7,7 +7,9 @@ export default function Project() {
   const en = language === "en";
   const barede = params.get("slug") === "bukit-barede";
   const inventory = params.get("slug") === "bnnk-inventory";
-  if (!barede && !inventory)
+  const tubing = params.get("slug") === "tubing-ticketing";
+  const tracket = params.get("slug") === "tracket";
+  if (!barede && !inventory && !tubing && !tracket)
     return (
       <section className="section">
         <h1>{en ? "Project not found" : "Project tidak ditemukan"}</h1>
@@ -16,9 +18,13 @@ export default function Project() {
         </Link>
       </section>
     );
-  const title = barede
-    ? "Bukit Barede Ticket Website"
-    : "BNNK Inventory Dashboard";
+  const title = tracket
+    ? "Tracket"
+    : barede
+      ? "Bukit Barede Ticket Website"
+      : tubing
+        ? "Aplikasi Ticketing Tubing"
+        : "BNNK Inventory Dashboard";
   return (
     <>
       <div className="page-intro">
@@ -32,27 +38,76 @@ export default function Project() {
           <img
             src={
               import.meta.env.BASE_URL +
-              (barede
-                ? "project-barede-placeholder.jpg"
-                : "project-inventory-placeholder.jpg")
+              (tracket
+                ? "tracket-dashboard-preview.jpg"
+                : barede
+                  ? "project-barede-placeholder.jpg"
+                  : tubing
+                    ? "project-tubing-placeholder.jpg"
+                    : "project-inventory-placeholder.jpg")
             }
-            alt=""
+            alt={
+              tracket
+                ? en
+                  ? "Tracket workshop service dashboard with blurred personal data"
+                  : "Dashboard servis bengkel Tracket dengan data pribadi disamarkan"
+                : ""
+            }
             width="640"
-            height="440"
+            height={tracket ? "auto" : 440}
           />
           <figcaption>
-            {en
-              ? "Placeholder image — not a project screenshot."
-              : "Gambar sementara — bukan screenshot project."}
+            {tracket
+              ? en
+                ? "Tracket service-management dashboard preview. Personal and customer details blurred."
+                : "Pratinjau dashboard manajemen servis Tracket. Data pribadi dan pelanggan disamarkan."
+              : en
+                ? "Placeholder image — not a project screenshot."
+                : "Gambar sementara — bukan screenshot project."}
           </figcaption>
         </figure>
         <h2>{en ? "About the project" : "Tentang project"}</h2>
-        {barede ? (
+        {tracket ? (
+          <>
+            <p>
+              {en
+                ? "Tracket is a workshop service-management application for tracking repair orders, technician queues, spare parts, warranties, and service reports."
+                : "Tracket adalah aplikasi manajemen servis bengkel untuk memantau order perbaikan, antrean teknisi, suku cadang, garansi, dan laporan servis."}
+            </p>
+            <h2>{en ? "STACK" : "TEKNOLOGI"}</h2>
+            <p>Laravel 12 · PHP 8.2 · MySQL · Tailwind CSS · Vite</p>
+            <a
+              className="project-profile"
+              href="https://github.com/zucksfox/Tracket"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {en ? "View source on GitHub ↗" : "Lihat source di GitHub ↗"}
+            </a>
+          </>
+        ) : barede ? (
           <p>
             {en
               ? "Ticket website for Bukit Barede. Further project details will be added."
               : "Website tiket Bukit Barede. Detail project selengkapnya akan ditambahkan."}
           </p>
+        ) : tubing ? (
+          <>
+            <p>
+              {en
+                ? "Ticketing application for tubing activities, covering ticket purchase, booking data, customer verification, and operational status tracking."
+                : "Aplikasi ticketing untuk kegiatan tubing yang mencakup pembelian tiket, data booking, verifikasi pelanggan, dan pemantauan status operasional."}
+            </p>
+            <h2>{en ? "MY ROLE" : "PERAN SAYA"}</h2>
+            <p>Fullstack Developer</p>
+            <h2>{en ? "SCOPE" : "CAKUPAN"}</h2>
+            <p>UI · Ticketing Flow · Booking Data · Admin Operations</p>
+            <ul>
+              <li>{en ? "Designed the ticket purchase and booking flow." : "Merancang alur pembelian tiket dan booking."}</li>
+              <li>{en ? "Structured customer and booking data for daily operations." : "Menyusun data pelanggan dan booking untuk kebutuhan operasional harian."}</li>
+              <li>{en ? "Built status handling for ticket verification and service readiness." : "Membangun pengelolaan status untuk verifikasi tiket dan kesiapan layanan."}</li>
+            </ul>
+          </>
         ) : (
           <>
             <p>

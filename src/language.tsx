@@ -73,16 +73,16 @@ const english: Record<string, string> = {
   "contact.title": 'Get in<br>touch<span class="contact-dot">.</span>',
 };
 const LanguageContext = createContext({
-  language: "id",
+  language: "en",
   setLanguage: (_lang: string) => {},
   t: (_key: string, fallback: string) => fallback,
 });
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState(() => {
     try {
-      return localStorage.getItem("portfolio-language") === "en" ? "en" : "id";
+      return localStorage.getItem("portfolio-language") ?? "en";
     } catch {
-      return "id";
+      return "en";
     }
   });
   useEffect(() => {

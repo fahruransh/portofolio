@@ -134,7 +134,7 @@ export default function Home() {
                 <h3>BNNK Inventory Dashboard</h3>
               </div>
               <span className="work-category">
-                Fullstack Development · 2025
+                Laravel 12 · PHP 8.2 · MySQL · 2025
               </span>
             </Link>
           </article>
@@ -150,7 +150,21 @@ export default function Home() {
                 <h3>Bukit Barede Ticket Website</h3>
               </div>
               <span className="work-category">
-                {en ? "Ticket Website" : "Website Tiket"}
+                {en ? "Ticket Website · HTML · JavaScript" : "Website Tiket · HTML · JavaScript"}
+              </span>
+            </Link>
+          </article>
+          <article className="work-entry">
+            <Link
+              className="work-row"
+              to="/project.html?slug=tracket"
+              data-preview={import.meta.env.BASE_URL + "tracket-dashboard-preview.jpg"}
+            >
+              <div className="work-title">
+                <h3>Tracket</h3>
+              </div>
+              <span className="work-category">
+                Laravel 12 · PHP 8.2 · MySQL
               </span>
             </Link>
           </article>
