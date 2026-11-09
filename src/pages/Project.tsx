@@ -78,7 +78,7 @@ export default function Project() {
             <p>Laravel 12 · PHP 8.2 · MySQL · Tailwind CSS · Vite</p>
             <a
               className="project-profile"
-              href="https://github.com/zucksfox/Tracket"
+              href="https://github.com/fahruransh/Tracket"
               target="_blank"
               rel="noreferrer"
             >
@@ -148,7 +148,7 @@ export default function Project() {
             </ul>
             <a
               className="project-profile"
-              href="https://github.com/zucksfox?tab=repositories"
+              href="https://github.com/fahruransh?tab=repositories"
               target="_blank"
               rel="noreferrer"
             >

@@ -137,7 +137,7 @@ export default function Header() {
           </Link>
         ))}
         <div className="menu-social">
-          <a href="https://github.com/zucksfox">GitHub ↗</a>
+          <a href="https://github.com/fahruransh">GitHub ↗</a>
           <a href="https://www.linkedin.com/in/fahrur-anshori/">LinkedIn ↗</a>
         </div>
       </nav>

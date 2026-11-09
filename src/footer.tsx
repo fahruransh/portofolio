@@ -43,7 +43,7 @@ export default function PortfolioFooter() {
             links: [
               {
                 label: "GitHub ↗",
-                href: "https://github.com/zucksfox?tab=repositories",
+                href: "https://github.com/fahruransh?tab=repositories",
               },
               {
                 label: "LinkedIn ↗",
